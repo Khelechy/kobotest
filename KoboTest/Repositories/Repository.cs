@@ -38,7 +38,15 @@ namespace KoboTest.Repositories
             await context.SaveChangesAsync();
             return entity;
         }
-        public async Task Delete(int id)
+        public async Task SoftDelete(int id)
+        {
+            var entity = await entities.FirstOrDefaultAsync(s => s.Id == id);
+            entity.IsDeleted = true;
+            context.Update(entity);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task HardDelete(int id)
         {
             var entity = await entities.FirstOrDefaultAsync(s => s.Id == id);
             entities.Remove(entity);

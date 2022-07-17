@@ -25,4 +25,9 @@ namespace KoboTest.Dtos
     {
         public int CourseId { get; set; }
     }
+
+    public class RemoveStudentCourseDto
+    {
+        public int CourseId { get; set; }
+    }
 }

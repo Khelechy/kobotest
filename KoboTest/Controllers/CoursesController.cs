@@ -48,7 +48,7 @@ namespace KoboTest.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourse(int id)
         {
-            await courseRepo.Delete(id);
+            await courseRepo.SoftDelete(id);
             return Ok();
         }
 

@@ -8,6 +8,7 @@ namespace KoboTest.Interfaces
         Task<T> Get(int id);
         Task<T> Insert(T entity);
         Task<T> Update(T entity);
-        Task Delete(int id);
+        Task HardDelete(int id);
+        Task SoftDelete(int id);
     }
 }

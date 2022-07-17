@@ -26,5 +26,6 @@ namespace KoboTest.Repositories
         {
             return await context.Students.Include(x => x.StudentCourses).ThenInclude(x => x.Course).FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted == false);
         }
+       
     }
 }

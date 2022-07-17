@@ -12,14 +12,12 @@ namespace KoboTest.Controllers
     [ApiController]
     public class StudentsController : ControllerBase
     {
-        private IRepository<Student> studentRepo;
         private readonly IStudentRepository studentRepository;
-        private IRepository<StudentCourse> studentCourseRepo; 
+        private readonly IStudentCourseRepository studentCourseRepo; 
         private IRepository<Course> courseRepo;
         private readonly IMapper mapper;
-        public StudentsController(IStudentRepository studentRepository, IRepository<Student> studentRepo, IRepository<Course> courseRepo, IRepository<StudentCourse> studentCourseRepo, IMapper mapper)
+        public StudentsController(IStudentRepository studentRepository, IRepository<Course> courseRepo, IStudentCourseRepository studentCourseRepo, IMapper mapper)
         {
-            this.studentRepo = studentRepo;
             this.studentRepository = studentRepository;
             this.studentCourseRepo = studentCourseRepo;
             this.courseRepo = courseRepo;   
@@ -38,7 +36,7 @@ namespace KoboTest.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetStudentById(int id)
         {
-            var student = await studentRepo.Get(id);
+            var student = await studentRepository.Get(id);
             var dto = mapper.Map<StudentDto>(student);
             return Ok(dto);
         }
@@ -55,17 +53,17 @@ namespace KoboTest.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStudent(int id)
         {
-            await studentRepo.Delete(id);
+            await studentRepository.SoftDelete(id);
             return Ok();
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> EditStudent(int id, [FromBody] EditStudentDto editStudentDto)
         {
-            Student student = await studentRepo.Get(id);
+            Student student = await studentRepository.Get(id);
             student.FirstName = string.IsNullOrEmpty(editStudentDto.FirstName) ? student.FirstName : editStudentDto.FirstName;
             student.LastName = string.IsNullOrEmpty(editStudentDto.LastName) ? student.LastName : editStudentDto.LastName;
-            var updated = await studentRepo.Update(student);
+            var updated = await studentRepository.Update(student);
             var studentDto = mapper.Map<StudentDto>(updated);
             return Ok(studentDto);
         }
@@ -76,16 +74,38 @@ namespace KoboTest.Controllers
             var course = await courseRepo.Get(addStudentCourseDto.CourseId);
             if (course == null)
                 return BadRequest();
-            var studentCourses = await studentCourseRepo.GetAll();
-            if(studentCourses.Where(x => x.StudentId == id).ToList().Count() == 3) // can be done from service layer
+            var studentCourses = await studentCourseRepo.GetStudentCourses(id);
+            if(studentCourses.Count() == 3)
             {
                 return BadRequest("Student already has 3 courses");
+            }
+
+
+
+            if(studentCourses.Any(x => x.CourseId == addStudentCourseDto.CourseId))
+            {
+                return BadRequest("Student already has course with this id");
             }
             StudentCourse studentCourse = new StudentCourse();
             studentCourse.CourseId = addStudentCourseDto.CourseId;
             studentCourse.StudentId = id;
             var entry = await studentCourseRepo.Insert(studentCourse);
             return Ok(entry);
+        }
+
+        [HttpPost("{id}/remove-course")]
+        public async Task<IActionResult> RemoveCourse(int id, [FromBody] RemoveStudentCourseDto removeStudentCourseDto)
+        {
+            var course = await courseRepo.Get(removeStudentCourseDto.CourseId);
+            if (course == null)
+                return BadRequest();
+            var studentCourse = await studentCourseRepo.GetStudentByCourseId(id, removeStudentCourseDto.CourseId);
+            if(studentCourse == null)
+            {
+                return BadRequest("Student doesnt have course with this courseId");
+            }
+            await studentCourseRepo.HardDelete(studentCourse.Id);
+            return Ok();
         }
     }
 }
