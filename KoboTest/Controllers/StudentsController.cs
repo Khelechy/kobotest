@@ -71,7 +71,7 @@ namespace KoboTest.Controllers
         [HttpPost("{id}/add-course")]
         public async Task<IActionResult> AddCourse(int id, [FromBody] AddStudentCourseDto addStudentCourseDto)
         {
-            var course = await courseRepo.Get(addStudentCourseDto.CourseId);
+            var course = await courseRepo.Get((int)addStudentCourseDto.CourseId);
             if (course == null)
                 return BadRequest();
             var studentCourses = await studentCourseRepo.GetStudentCourses(id);
@@ -87,7 +87,7 @@ namespace KoboTest.Controllers
                 return BadRequest("Student already has course with this id");
             }
             StudentCourse studentCourse = new StudentCourse();
-            studentCourse.CourseId = addStudentCourseDto.CourseId;
+            studentCourse.CourseId = (int)addStudentCourseDto.CourseId;
             studentCourse.StudentId = id;
             var entry = await studentCourseRepo.Insert(studentCourse);
             return Ok(entry);
@@ -96,10 +96,10 @@ namespace KoboTest.Controllers
         [HttpPost("{id}/remove-course")]
         public async Task<IActionResult> RemoveCourse(int id, [FromBody] RemoveStudentCourseDto removeStudentCourseDto)
         {
-            var course = await courseRepo.Get(removeStudentCourseDto.CourseId);
+            var course = await courseRepo.Get((int)removeStudentCourseDto.CourseId);
             if (course == null)
                 return BadRequest();
-            var studentCourse = await studentCourseRepo.GetStudentByCourseId(id, removeStudentCourseDto.CourseId);
+            var studentCourse = await studentCourseRepo.GetStudentByCourseId(id, (int)removeStudentCourseDto.CourseId);
             if(studentCourse == null)
             {
                 return BadRequest("Student doesnt have course with this courseId");
