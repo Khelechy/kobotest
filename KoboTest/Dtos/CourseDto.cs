@@ -1,4 +1,5 @@
 ﻿using KoboTest.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace KoboTest.Dtos
 {
@@ -10,7 +11,9 @@ namespace KoboTest.Dtos
 
     public class AddCourseDto
     {
+        [Required]
         public string Code { get; set; }
+        [Required]
         public string Title { get; set; }
     }
 
